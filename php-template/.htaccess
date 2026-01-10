@@ -1,20 +1,13 @@
 # Hoxta PHP Template - .htaccess
-# Optional: Enable pretty URLs
-
 # Enable Rewrite Engine
 RewriteEngine On
+
+# Custom 404 Error Page
+ErrorDocument 404 /404.php
 
 # Redirect to HTTPS (uncomment for production)
 # RewriteCond %{HTTPS} off
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-# Remove .php extension (optional)
-# RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteCond %{REQUEST_FILENAME}.php -f
-# RewriteRule ^(.*)$ $1.php [L]
-
-# Pretty URLs for game pages (optional)
-# RewriteRule ^game-servers/([a-z0-9-]+)/?$ game.php?game=$1 [L,QSA]
 
 # Cache static assets
 <IfModule mod_expires.c>
