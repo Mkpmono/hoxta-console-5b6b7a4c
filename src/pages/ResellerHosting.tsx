@@ -1,122 +1,151 @@
 import { Layout } from "@/components/layout/Layout";
-import { motion } from "framer-motion";
-import { Check, Server, Users, DollarSign, Headphones } from "lucide-react";
-import { Link } from "react-router-dom";
-
-const plans = [
-  {
-    name: "Bronze",
-    price: 9.99,
-    accounts: 25,
-    storage: "50GB NVMe",
-    features: ["WHM/cPanel", "Free SSL", "Softaculous", "White-label", "24/7 Support"],
-  },
-  {
-    name: "Silver",
-    price: 19.99,
-    accounts: 75,
-    storage: "100GB NVMe",
-    features: ["WHM/cPanel", "Free SSL", "Softaculous", "White-label", "Priority Support", "Free WHMCS"],
-    popular: true,
-  },
-  {
-    name: "Gold",
-    price: 39.99,
-    accounts: "Unlimited",
-    storage: "200GB NVMe",
-    features: ["WHM/cPanel", "Free SSL", "Softaculous", "White-label", "Dedicated Support", "Free WHMCS", "Dedicated IP"],
-  },
-];
+import {
+  HostingHero,
+  TrustBar,
+  PricingPlans,
+  FeatureGrid,
+  ContentSection,
+  HowItWorks,
+  GlobalInfrastructure,
+  PlanComparison,
+  FAQAccordion,
+  FinalCTA,
+  CrossSellBlock,
+} from "@/components/hosting";
+import {
+  resellerHostingPlans,
+  resellerHostingFeatures,
+  resellerHostingFAQs,
+  resellerHostingComparison,
+} from "@/data/hostingData";
+import { Users, TrendingUp, DollarSign, Server } from "lucide-react";
+import { SEOHead, ServiceSchema, FAQSchema, OrganizationSchema } from "@/components/seo";
 
 export default function ResellerHosting() {
   return (
     <Layout>
-      <section className="py-20 md:py-32">
-        <div className="container mx-auto px-4 md:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
-              <Server className="w-4 h-4" />
-              <span className="text-sm font-medium">Reseller Hosting</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Start Your <span className="text-gradient">Hosting Business</span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Create and manage your own hosting company with our white-label reseller plans.
-            </p>
-          </motion.div>
+      {/* SEO */}
+      <SEOHead
+        title="Reseller Hosting - Start Your Hosting Business | Hoxta"
+        description="Launch your own hosting company with Hoxta's white-label reseller hosting. WHM/cPanel, free WHMCS, unlimited clients. Plans from $14.99/mo."
+        canonicalUrl="https://hoxta.com/reseller-hosting"
+      />
+      <ServiceSchema
+        name="Hoxta Reseller Hosting"
+        description="White-label reseller hosting with WHM/cPanel, WHMCS integration, and unlimited client accounts to start your hosting business."
+        priceRange="$14.99 - $74.99"
+      />
+      <FAQSchema faqs={resellerHostingFAQs} />
+      <OrganizationSchema />
 
-          <div className="grid md:grid-cols-3 gap-6 mb-16">
-            {plans.map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`glass-card p-6 relative ${plan.popular ? "border-primary/50 shadow-glow" : ""}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
-                    BEST VALUE
-                  </div>
-                )}
-                <h3 className="text-xl font-semibold text-foreground mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-4xl font-bold text-foreground">${plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
-                  <span><Users className="w-4 h-4 inline mr-1" />{plan.accounts} accounts</span>
-                  <span>{plan.storage}</span>
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Check className="w-4 h-4 text-primary" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/contact"
-                  className={`block w-full py-3 text-center rounded-lg font-medium transition-colors ${
-                    plan.popular ? "btn-glow" : "btn-outline"
-                  }`}
-                >
-                  Get Started
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+      {/* Hero Section */}
+      <HostingHero
+        badge="Reseller Hosting"
+        headline="Start Your"
+        highlightedText="Hosting Business"
+        description="Create and manage your own hosting company with our white-label reseller plans. Set your prices, keep 100% of profits, and let us handle the infrastructure."
+        promotion={{
+          text: "Limited Offer",
+          discount: "Free WHMCS License",
+          endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        }}
+        primaryCTA={{ text: "Start Reselling", href: "#pricing" }}
+        secondaryCTA={{ text: "Compare Plans", href: "#comparison" }}
+      />
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: DollarSign, title: "Set Your Prices", desc: "Full control over pricing" },
-              { icon: Users, title: "Manage Clients", desc: "Easy client management" },
-              { icon: Headphones, title: "We Handle Support", desc: "Optional white-label support" },
-            ].map((item, index) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                className="glass-card p-6 text-center"
-              >
-                <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <item.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h4 className="font-semibold text-foreground mb-1">{item.title}</h4>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Trust Bar */}
+      <TrustBar />
+
+      {/* Pricing Plans */}
+      <PricingPlans
+        title="Reseller Hosting Plans"
+        subtitle="Everything you need to run a professional hosting business. All plans include WHM, white-label branding, and 24/7 support."
+        plans={resellerHostingPlans}
+      />
+
+      {/* Why Choose Section */}
+      <FeatureGrid
+        title="Why Choose Hoxta Reseller Hosting"
+        subtitle="The complete toolkit for building and scaling your hosting business."
+        features={resellerHostingFeatures}
+      />
+
+      {/* Content Section - What is Reseller Hosting */}
+      <ContentSection
+        title="What is Reseller Hosting?"
+        description="Reseller hosting lets you purchase hosting resources in bulk and resell them to your own clients under your brand. You manage clients through WHM while we handle all the infrastructure, security, and server management."
+        points={[
+          "Purchase server resources at wholesale prices",
+          "Create and manage individual cPanel accounts for clients",
+          "Set your own pricing and billing terms",
+          "Full white-label branding with custom nameservers",
+        ]}
+        icon={Users}
+      />
+
+      {/* Content Section - Business Growth */}
+      <ContentSection
+        title="Scale Your Business"
+        description="Start small and grow without limits. Our reseller plans scale seamlessly as you acquire more clients. Upgrade anytime without migration or downtime."
+        points={[
+          "Easy upgrades as your client base grows",
+          "Integrated billing with optional WHMCS license",
+          "Automated provisioning and account management",
+          "White-label support options available",
+        ]}
+        icon={TrendingUp}
+        reverse
+      />
+
+      {/* Content Section - Profitability */}
+      <ContentSection
+        title="Maximize Your Profits"
+        description="With low overhead costs and competitive wholesale pricing, reseller hosting offers excellent profit margins. You set the prices and keep 100% of what you charge."
+        points={[
+          "No infrastructure investment required",
+          "Complete pricing flexibility",
+          "Recurring revenue business model",
+          "Low startup costs, high profit potential",
+        ]}
+        icon={DollarSign}
+      />
+
+      {/* How It Works */}
+      <HowItWorks />
+
+      {/* Global Infrastructure */}
+      <GlobalInfrastructure />
+
+      {/* Plan Comparison */}
+      <PlanComparison
+        title="Compare Reseller Plans"
+        subtitle="Find the perfect plan for your hosting business."
+        plans={resellerHostingComparison.plans}
+        categories={resellerHostingComparison.categories}
+      />
+
+      {/* Cross-sell: VPS/Dedicated */}
+      <CrossSellBlock
+        headline="Growing Fast?"
+        description="Need more power and isolation for your hosting business? Upgrade to VPS or dedicated servers for enhanced performance, complete control, and custom configurations."
+        benefits={["Full server isolation", "Unlimited resource allocation", "Custom server setups"]}
+        ctaText="Explore VPS Hosting"
+        ctaHref="/vps-hosting"
+        icon={Server}
+      />
+
+      {/* FAQ Section */}
+      <FAQAccordion
+        title="Reseller Hosting FAQ"
+        subtitle="Common questions about starting your hosting business."
+        items={resellerHostingFAQs}
+      />
+
+      {/* Final CTA */}
+      <FinalCTA
+        title="Ready to Start Your Hosting Business?"
+        subtitle="Join hundreds of successful resellers who trust Hoxta for reliable infrastructure and excellent support."
+      />
     </Layout>
   );
 }
