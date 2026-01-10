@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import Colocation from "./pages/Colocation";
 import TeamSpeak from "./pages/TeamSpeak";
 import DiscordBot from "./pages/DiscordBot";
+import KnowledgeBase from "./pages/KnowledgeBase";
 // Panel Pages
 import Login from "./pages/panel/Login";
 import PanelDashboard from "./pages/panel/Dashboard";
@@ -74,6 +75,9 @@ const App = () => (
             <Route path="/colocation" element={<Colocation />} />
             <Route path="/teamspeak" element={<TeamSpeak />} />
             <Route path="/discord-bot" element={<DiscordBot />} />
+            <Route path="/knowledge-base" element={<KnowledgeBase />} />
+            <Route path="/knowledge-base/:categoryId" element={<KnowledgeBase />} />
+            <Route path="/knowledge-base/:categoryId/:articleId" element={<KnowledgeBase />} />
             
             {/* Auth */}
             <Route path="/panel/login" element={<Login />} />

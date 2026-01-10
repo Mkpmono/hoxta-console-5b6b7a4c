@@ -1,312 +1,236 @@
 import { useRef, useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Headphones, Cpu, HardDrive, Wifi, Shield, Zap, MessageSquare } from "lucide-react";
+import { motion, useReducedMotion, useInView } from "framer-motion";
+import { 
+  Server, 
+  Shield, 
+  Zap, 
+  Globe, 
+  Headphones, 
+  HardDrive,
+  Activity,
+  Lock,
+  ArrowRight
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-const features = [
-  {
-    icon: Headphones,
-    title: "Customer Support",
-    description: "Răspuns mediu sub 15 minute. Ingineri 24/7, prin ticket & chat, cu ghidare pas cu pas în troubleshooting.",
-    stats: "Media pe ultimele 30 zile",
-    showTicketCTA: true,
-  },
-  {
-    icon: Cpu,
-    title: "Enterprise Hardware",
-    description: "Experience superior performance with our enterprise-grade server and network hardware ensuring maximum reliability and uptime.",
-    stats: "99.9% Monthly uptime",
-    bars: true,
-  },
-  {
-    icon: HardDrive,
-    title: "NVMe Storage",
-    description: "Lightning-fast storage with NVMe SSDs delivering exceptional read/write speeds and low latency.",
-    storageUI: true,
-  },
-  {
-    icon: Wifi,
-    title: "Fast Network",
-    description: "Enjoy lightning-fast speeds with our 10 Gbps network infrastructure. Say goodbye to slow connections and enjoy seamless remote performance.",
-    networkUI: true,
-  },
-  {
-    icon: Shield,
-    title: "DDoS Protection",
-    description: "Advanced scrubbing 24/7 rules & game proofing. Multi-layer protection keeps your services online.",
-    ddosUI: true,
-  },
-  {
-    icon: Zap,
-    title: "Instant Setup",
-    description: "Get your server deployed in under 60 seconds. Automated provisioning with pre-configured templates for all popular games and services.",
-    instantUI: true,
-  },
-];
-
-interface AnimatedBarProps {
-  height: number;
-  delay: number;
+// Animated counter hook
+function useAnimatedCounter(target: number, duration: number = 2000, isInView: boolean) {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    if (!isInView) return;
+    
+    let startTime: number;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, isInView]);
+  
+  return count;
 }
 
-function AnimatedBar({ height, delay }: AnimatedBarProps) {
+// Infrastructure stats with animated counters
+function InfrastructureStats() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  
+  const uptime = useAnimatedCounter(99.99, 2000, isInView);
+  const locations = useAnimatedCounter(12, 1500, isInView);
+  const bandwidth = useAnimatedCounter(40, 1800, isInView);
+  const latency = useAnimatedCounter(5, 1200, isInView);
+
+  const stats = [
+    { value: `${uptime.toFixed(2)}%`, label: "Uptime SLA", suffix: "" },
+    { value: locations, label: "Global Locations", suffix: "+" },
+    { value: bandwidth, label: "Gbps Network", suffix: "+" },
+    { value: `<${latency}ms`, label: "Avg Latency", suffix: "" },
+  ];
+
   return (
     <motion.div
-      className="w-2 bg-primary/40 rounded-t"
-      initial={{ height: 0 }}
-      whileInView={{ height: `${height}%` }}
-      transition={{ duration: 0.5, delay }}
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
       viewport={{ once: true }}
-    />
-  );
-}
-
-function StorageCard() {
-  const [values, setValues] = useState({ read: 0, write: 0, iops: 0, latency: 0 });
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setValues({ read: 7200, write: 4850, iops: 210000, latency: 0.1 });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="mt-4 p-3 rounded-lg bg-card/50 border border-border/30">
-      <div className="flex items-center gap-4 mb-3">
-        <div className="text-xs text-muted-foreground">NVMe</div>
-        <div className="text-xs text-muted-foreground">PCIe 4.0 x4</div>
-        <div className="ml-auto flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">Health</span>
-          <span className="text-xs text-green-400">99%</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">40°C</span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <div className="text-xs text-muted-foreground mb-1">Read</div>
-          <div className="text-lg font-semibold text-primary">{values.read.toLocaleString()} <span className="text-xs">MB/s</span></div>
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground mb-1">Write</div>
-          <div className="text-lg font-semibold text-foreground">{values.write.toLocaleString()} <span className="text-xs">MB/s</span></div>
-        </div>
-      </div>
-      <div className="mt-3 flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-16 h-16 relative">
-            <svg className="w-full h-full -rotate-90">
-              <circle cx="32" cy="32" r="28" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
-              <motion.circle
-                cx="32"
-                cy="32"
-                r="28"
-                fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="4"
-                strokeDasharray="176"
-                initial={{ strokeDashoffset: 176 }}
-                whileInView={{ strokeDashoffset: 35 }}
-                transition={{ duration: 1, delay: 0.3 }}
-                viewport={{ once: true }}
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-medium">80%</span>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground">512GB<br/>/ 1TB SSD</div>
-        </div>
-        <div className="flex-1 space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">IOPS</span>
-            <span className="text-foreground">{values.iops.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Latency</span>
-            <span className="text-foreground">{values.latency}ms</span>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-primary"
-              initial={{ width: 0 }}
-              whileInView={{ width: "67%" }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              viewport={{ once: true }}
-            />
-          </div>
-          <div className="text-xs text-primary">67% used</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function NetworkCard() {
-  return (
-    <div className="mt-4">
-      <div className="text-4xl font-bold text-foreground mb-3">4 Gbps</div>
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground w-20">Downloads</span>
-          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-primary"
-              initial={{ width: 0 }}
-              whileInView={{ width: "85%" }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            />
-          </div>
-          <span className="text-xs text-foreground">4085 Mbps</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground w-20">Uploads</span>
-          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-primary/60"
-              initial={{ width: 0 }}
-              whileInView={{ width: "68%" }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              viewport={{ once: true }}
-            />
-          </div>
-          <span className="text-xs text-foreground">4078 Mbps</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DDoSCard() {
-  return (
-    <div className="mt-4 flex items-center justify-center">
-      <div className="relative">
+      className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+    >
+      {stats.map((stat, index) => (
         <motion.div
-          className="w-20 h-20 rounded-full border-2 border-primary/30 flex items-center justify-center"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <Shield className="w-10 h-10 text-primary" />
-        </motion.div>
-        {/* Pulse rings */}
-        <motion.div
-          className="absolute inset-0 rounded-full border border-primary/20"
-          animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute inset-0 rounded-full border border-primary/20"
-          animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-        />
-      </div>
-      <div className="ml-4 text-sm text-primary hover:underline cursor-pointer">
-        Always-on scrubbing 24/7
-      </div>
-    </div>
-  );
-}
-
-function InstantSetupCard() {
-  const [progress, setProgress] = useState(0);
-  const [showCheck, setShowCheck] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setProgress(100);
-      setTimeout(() => setShowCheck(true), 500);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="mt-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-muted-foreground">Server Deployment</span>
-        <motion.span
-          className="text-sm font-medium text-primary"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          {showCheck ? "✓ Complete" : `${progress}%`}
-        </motion.span>
-      </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden mb-3">
-        <motion.div
-          className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full"
-          initial={{ width: 0 }}
-          whileInView={{ width: "100%" }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          key={index}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: index * 0.1 }}
           viewport={{ once: true }}
-        />
-      </div>
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Auto-configured</span>
-        <span className="text-primary font-medium">&lt; 60 seconds</span>
-      </div>
-    </div>
+          className="text-center p-6 rounded-2xl bg-card/40 border border-border/30 backdrop-blur-sm"
+        >
+          <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+            {typeof stat.value === 'number' ? stat.value : stat.value}{stat.suffix}
+          </div>
+          <div className="text-sm text-muted-foreground">{stat.label}</div>
+        </motion.div>
+      ))}
+    </motion.div>
   );
 }
 
-function NetworkBackground() {
+// Infrastructure Grid Background
+function InfrastructureBackground() {
   const prefersReducedMotion = useReducedMotion();
   
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Grid pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
-      />
-      
-      {/* Animated nodes */}
+      {/* Hexagonal grid pattern */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.04]">
+        <defs>
+          <pattern id="hex-grid" width="60" height="52" patternUnits="userSpaceOnUse">
+            <path 
+              d="M30 0 L60 15 L60 37 L30 52 L0 37 L0 15 Z" 
+              fill="none" 
+              stroke="hsl(var(--primary))" 
+              strokeWidth="0.5"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hex-grid)" />
+      </svg>
+
+      {/* Animated data streams */}
       {!prefersReducedMotion && (
         <>
-          {[...Array(6)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-primary/20 rounded-full"
+              className="absolute w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent"
               style={{
-                left: `${15 + i * 15}%`,
-                top: `${20 + (i % 3) * 25}%`,
+                left: `${10 + i * 20}%`,
+                height: '100%',
               }}
               animate={{
-                opacity: [0.2, 0.6, 0.2],
-                scale: [1, 1.5, 1],
+                opacity: [0, 0.5, 0],
+                scaleY: [0, 1, 0],
               }}
               transition={{
                 duration: 3,
                 repeat: Infinity,
-                delay: i * 0.5,
+                delay: i * 0.6,
+                ease: "easeInOut",
               }}
             />
           ))}
         </>
       )}
       
-      {/* Glow spots */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-primary/3 rounded-full blur-[80px]" />
+      {/* Glow effects */}
+      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[150px]" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary/3 rounded-full blur-[120px]" />
     </div>
   );
 }
+
+// Feature cards data
+const infrastructureFeatures = [
+  {
+    icon: Server,
+    title: "Enterprise Hardware",
+    description: "Intel Xeon & AMD EPYC processors, ECC RAM, and redundant power systems in Tier III+ datacenters.",
+    highlight: "99.99% Uptime",
+  },
+  {
+    icon: HardDrive,
+    title: "NVMe Storage",
+    description: "Ultra-fast NVMe SSDs with RAID protection delivering up to 7,000 MB/s read speeds and sub-millisecond latency.",
+    highlight: "7,000 MB/s",
+  },
+  {
+    icon: Globe,
+    title: "Global Network",
+    description: "12+ strategic locations worldwide with direct peering to major ISPs, ensuring optimal routing and minimal latency.",
+    highlight: "12+ Locations",
+  },
+  {
+    icon: Shield,
+    title: "DDoS Protection",
+    description: "Multi-layer mitigation with 2.5 Tbps+ scrubbing capacity. Game-specific filters and instant threat detection.",
+    highlight: "2.5 Tbps+",
+  },
+  {
+    icon: Zap,
+    title: "Instant Deployment",
+    description: "Automated provisioning with one-click installs. Your server is live in under 60 seconds with pre-configured templates.",
+    highlight: "< 60 Seconds",
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Expert Support",
+    description: "Certified engineers available around the clock. Average response time under 15 minutes for priority tickets.",
+    highlight: "< 15 Min Response",
+  },
+];
+
+// Feature Card Component
+function FeatureCard({ feature, index }: { feature: typeof infrastructureFeatures[0]; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -8, transition: { duration: 0.2 } }}
+      className="group relative"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <div className="relative glass-card p-6 h-full border border-border/30 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_8px_40px_rgba(25,195,255,0.12)]">
+        {/* Highlight badge */}
+        <div className="absolute -top-3 right-4">
+          <span className="px-3 py-1 text-xs font-semibold bg-primary/10 text-primary border border-primary/20 rounded-full">
+            {feature.highlight}
+          </span>
+        </div>
+        
+        {/* Icon */}
+        <motion.div 
+          className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mb-5"
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ duration: 0.2 }}
+        >
+          <feature.icon className="w-7 h-7 text-primary" />
+        </motion.div>
+        
+        {/* Content */}
+        <h3 className="text-lg font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+          {feature.title}
+        </h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {feature.description}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+// Trust indicators
+const trustBadges = [
+  { icon: Lock, label: "SOC 2 Compliant" },
+  { icon: Activity, label: "24/7 Monitoring" },
+  { icon: Server, label: "Tier III+ DC" },
+  { icon: Shield, label: "ISO 27001" },
+];
 
 export function WhyChooseSection() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <section className="py-20 md:py-32 relative overflow-hidden">
-      <NetworkBackground />
+    <section className="py-24 md:py-32 relative overflow-hidden">
+      <InfrastructureBackground />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header */}
@@ -315,81 +239,86 @@ export function WhyChooseSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-16"
         >
-          <span className="text-sm font-medium text-primary mb-2 block">FEATURES</span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Why choose Hoxta?
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6"
+          >
+            <Server className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Infrastructure Built for Performance</span>
+          </motion.div>
+          
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            Enterprise-Grade Hosting
+            <span className="block text-primary mt-2">You Can Rely On</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Performanță enterprise, latență mică și securitate by design. Cardurile de mai jos sunt gata de folosit ca secțiuni în pagina ta.
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            Built on premium hardware with redundant systems, global reach, and proactive monitoring. 
+            Our infrastructure is designed for demanding workloads that require maximum uptime.
           </p>
         </motion.div>
 
-        {/* Feature Cards - Symmetric 3x2 Grid */}
+        {/* Stats */}
+        <InfrastructureStats />
+
+        {/* Feature Cards Grid */}
         <div 
           ref={containerRef} 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
         >
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ 
-                y: -6, 
-                transition: { duration: 0.2 } 
-              }}
-              className="glass-card p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_8px_40px_rgba(25,195,255,0.12)]"
-            >
-              <div className="flex items-start gap-4 mb-4">
-                <motion.div 
-                  className="p-2.5 rounded-xl bg-primary/10 border border-primary/20"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <feature.icon className="w-5 h-5 text-primary" />
-                </motion.div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-                </div>
-              </div>
-
-              {feature.bars && (
-                <div className="mt-4">
-                  <div className="text-xs text-muted-foreground mb-2">{feature.stats}</div>
-                  <div className="flex items-end gap-1 h-20">
-                    {[60, 80, 45, 90, 75, 85, 70, 95, 65, 88, 72, 92].map((h, i) => (
-                      <AnimatedBar key={i} height={h} delay={i * 0.05} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {feature.storageUI && <StorageCard />}
-              {feature.networkUI && <NetworkCard />}
-              {feature.ddosUI && <DDoSCard />}
-              {feature.instantUI && <InstantSetupCard />}
-
-              {feature.showTicketCTA && (
-                <div className="mt-4">
-                  <Link to="/panel/tickets/new">
-                    <Button 
-                      className="w-full btn-glow group"
-                      size="sm"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                      Deschide un ticket
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </motion.div>
+          {infrastructureFeatures.map((feature, index) => (
+            <FeatureCard key={index} feature={feature} index={index} />
           ))}
         </div>
+
+        {/* Trust badges */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="flex flex-wrap justify-center items-center gap-4 md:gap-8 mb-12"
+        >
+          {trustBadges.map((badge, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="flex items-center gap-2 text-muted-foreground"
+            >
+              <badge.icon className="w-4 h-4 text-primary/70" />
+              <span className="text-sm">{badge.label}</span>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* CTAs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+          className="flex flex-col sm:flex-row justify-center items-center gap-4"
+        >
+          <Link to="/game-servers">
+            <Button className="btn-glow group px-8">
+              Explore Services
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
+          <Link to="/panel/tickets/new">
+            <Button variant="outline" className="btn-outline px-8">
+              <Headphones className="w-4 h-4 mr-2" />
+              Contact Support
+            </Button>
+          </Link>
+        </motion.div>
       </div>
     </section>
   );
