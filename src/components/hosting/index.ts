@@ -8,3 +8,5 @@ export { GlobalInfrastructure } from './GlobalInfrastructure';
 export { PlanComparison } from './PlanComparison';
 export { FAQAccordion, type FAQItem } from './FAQAccordion';
 export { FinalCTA } from './FinalCTA';
+export { CrossSellBlock } from './CrossSellBlock';
+export { ManagedServicesUpsell } from './ManagedServicesUpsell';

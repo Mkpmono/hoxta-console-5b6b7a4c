@@ -10,6 +10,7 @@ import {
   PlanComparison,
   FAQAccordion,
   FinalCTA,
+  CrossSellBlock,
 } from "@/components/hosting";
 import {
   webHostingPlans,
@@ -17,11 +18,26 @@ import {
   webHostingFAQs,
   webHostingComparison,
 } from "@/data/hostingData";
-import { Globe, Zap, Shield } from "lucide-react";
+import { Globe, Zap, Shield, Server } from "lucide-react";
+import { SEOHead, ServiceSchema, FAQSchema, OrganizationSchema } from "@/components/seo";
 
 export default function WebHosting() {
   return (
     <Layout>
+      {/* SEO */}
+      <SEOHead
+        title="Web Hosting - Fast, Secure & Reliable | Hoxta"
+        description="Launch your website with Hoxta's blazing-fast NVMe web hosting. Free SSL, daily backups, 24/7 support, and 99.9% uptime. Plans from $2.99/mo."
+        canonicalUrl="https://hoxta.com/web-hosting"
+      />
+      <ServiceSchema
+        name="Hoxta Web Hosting"
+        description="Premium web hosting with NVMe SSD storage, free SSL certificates, daily backups, and enterprise-grade DDoS protection."
+        priceRange="$2.99 - $24.99"
+      />
+      <FAQSchema faqs={webHostingFAQs} />
+      <OrganizationSchema />
+
       {/* Hero Section */}
       <HostingHero
         badge="Web Hosting"
@@ -106,6 +122,16 @@ export default function WebHosting() {
         subtitle="See exactly what's included in each plan to find your perfect match."
         plans={webHostingComparison.plans}
         categories={webHostingComparison.categories}
+      />
+
+      {/* Cross-sell: VPS */}
+      <CrossSellBlock
+        headline="Need More Power?"
+        description="Outgrowing shared hosting? Upgrade to VPS for dedicated resources, full root access, and unlimited scalability for demanding applications."
+        benefits={["Dedicated CPU & RAM", "Full root access", "Instant scalability"]}
+        ctaText="View VPS Plans"
+        ctaHref="/vps-hosting"
+        icon={Server}
       />
 
       {/* FAQ Section */}

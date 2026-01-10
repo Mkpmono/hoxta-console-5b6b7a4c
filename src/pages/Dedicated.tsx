@@ -1,7 +1,18 @@
 import { Layout } from "@/components/layout/Layout";
 import { motion } from "framer-motion";
-import { Check, Server, Cpu, HardDrive, Wifi, Zap } from "lucide-react";
+import { Check, Server, Cpu, HardDrive, Wifi, Zap, Shield, Lock, Gauge } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  HostingHero,
+  TrustBar,
+  FeatureGrid,
+  ContentSection,
+  GlobalInfrastructure,
+  FAQAccordion,
+  FinalCTA,
+  ManagedServicesUpsell,
+} from "@/components/hosting";
+import { SEOHead, ServiceSchema, FAQSchema, OrganizationSchema } from "@/components/seo";
 
 const servers = [
   {
@@ -22,26 +33,116 @@ const servers = [
   },
 ];
 
+const dedicatedFeatures = [
+  {
+    icon: Cpu,
+    title: "Full Hardware Control",
+    description: "Complete access to physical hardware with no virtualization overhead.",
+  },
+  {
+    icon: Shield,
+    title: "DDoS Protection",
+    description: "Enterprise-grade protection up to 1Tbps included with every server.",
+  },
+  {
+    icon: Gauge,
+    title: "Maximum Performance",
+    description: "No resource sharing means consistent, predictable performance.",
+  },
+  {
+    icon: Lock,
+    title: "IPMI Access",
+    description: "Remote server management with out-of-band console access.",
+  },
+  {
+    icon: HardDrive,
+    title: "NVMe RAID Storage",
+    description: "Hardware RAID with NVMe drives for speed and redundancy.",
+  },
+  {
+    icon: Wifi,
+    title: "Premium Network",
+    description: "1Gbps dedicated port with premium transit and low latency.",
+  },
+];
+
+const dedicatedFAQs = [
+  {
+    question: "How long does it take to deploy a dedicated server?",
+    answer: "Standard configurations are typically deployed within 1-4 hours. Custom configurations may take 24-48 hours depending on hardware availability.",
+  },
+  {
+    question: "Can I customize the server configuration?",
+    answer: "Yes! Contact our sales team for custom configurations including additional RAM, storage, or specific CPU requirements.",
+  },
+  {
+    question: "Is there a setup fee?",
+    answer: "No, there are no setup fees for any of our dedicated server configurations. You only pay the monthly cost.",
+  },
+  {
+    question: "What operating systems are available?",
+    answer: "We support all major Linux distributions (Ubuntu, CentOS, Debian, etc.) and Windows Server. Custom images can be deployed upon request.",
+  },
+  {
+    question: "Do you offer managed dedicated servers?",
+    answer: "Yes! We offer optional managed services including server monitoring, security patching, backup management, and 24/7 support.",
+  },
+  {
+    question: "What is your SLA guarantee?",
+    answer: "All dedicated servers come with a 99.99% uptime SLA backed by service credits. We guarantee network, power, and hardware availability.",
+  },
+];
+
 export default function Dedicated() {
   return (
     <Layout>
-      <section className="py-20 md:py-32">
+      {/* SEO */}
+      <SEOHead
+        title="Dedicated Servers - Enterprise Bare Metal | Hoxta"
+        description="Enterprise-grade dedicated servers with Intel Xeon & AMD EPYC processors. Full hardware control, NVMe RAID, DDoS protection. From $89/mo."
+        canonicalUrl="https://hoxta.com/dedicated-servers"
+      />
+      <ServiceSchema
+        name="Hoxta Dedicated Servers"
+        description="Enterprise bare metal dedicated servers with full hardware control, NVMe RAID storage, and premium network connectivity."
+        priceRange="$89 - $249"
+      />
+      <FAQSchema faqs={dedicatedFAQs} />
+      <OrganizationSchema />
+
+      {/* Hero */}
+      <HostingHero
+        badge="Dedicated Servers"
+        headline="Enterprise"
+        highlightedText="Dedicated Servers"
+        description="Bare metal servers with full hardware control, maximum performance, and enterprise-grade infrastructure. No sharing, no compromises."
+        promotion={{
+          text: "Enterprise Deal",
+          discount: "Free Setup + First Month 50% OFF",
+          endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
+        }}
+        primaryCTA={{ text: "Configure Server", href: "#servers" }}
+        secondaryCTA={{ text: "Contact Sales", href: "/contact" }}
+      />
+
+      {/* Trust Bar */}
+      <TrustBar />
+
+      {/* Server Selection */}
+      <section id="servers" className="py-16 md:py-24">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
-              <Server className="w-4 h-4" />
-              <span className="text-sm font-medium">Dedicated Servers</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              <span className="text-gradient">Dedicated</span> Servers
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Enterprise-grade bare metal servers with full hardware control and maximum performance.
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Choose Your <span className="text-gradient">Configuration</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Pre-configured servers ready for rapid deployment. Need a custom build? Contact our sales team.
             </p>
           </motion.div>
 
@@ -50,7 +151,8 @@ export default function Dedicated() {
               <motion.div
                 key={server.name}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className={`glass-card p-6 relative ${server.popular ? "border-primary/50 shadow-glow" : ""}`}
               >
@@ -110,9 +212,10 @@ export default function Dedicated() {
 
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="mt-12 glass-card p-6 flex flex-col md:flex-row items-center justify-between gap-4"
+            className="mt-8 glass-card p-6 flex flex-col md:flex-row items-center justify-between gap-4"
           >
             <div className="flex items-center gap-4">
               <Zap className="w-8 h-8 text-primary" />
@@ -127,6 +230,58 @@ export default function Dedicated() {
           </motion.div>
         </div>
       </section>
+
+      {/* Feature Grid */}
+      <FeatureGrid
+        title="Why Choose Hoxta Dedicated Servers"
+        subtitle="Enterprise-grade bare metal with premium features included."
+        features={dedicatedFeatures}
+      />
+
+      {/* Content Sections */}
+      <ContentSection
+        title="What is a Dedicated Server?"
+        description="A dedicated server provides you with an entire physical machine exclusively for your use. Unlike VPS or shared hosting, you get 100% of the hardware resources with no virtualization layer, delivering maximum performance and complete control."
+        points={[
+          "Full physical server exclusively for you",
+          "No CPU or RAM sharing with other users",
+          "Maximum I/O performance with direct hardware access",
+          "Complete OS and software customization",
+        ]}
+        icon={Server}
+      />
+
+      <ContentSection
+        title="Enterprise Performance"
+        description="Our dedicated servers are built with enterprise-grade components from Intel and AMD, delivering consistent performance for the most demanding workloads."
+        points={[
+          "Latest Intel Xeon and AMD EPYC processors",
+          "ECC RAM for data integrity",
+          "Hardware RAID with NVMe SSDs",
+          "Redundant power and network",
+        ]}
+        icon={Gauge}
+        reverse
+      />
+
+      {/* Global Infrastructure */}
+      <GlobalInfrastructure />
+
+      {/* Managed Services Upsell */}
+      <ManagedServicesUpsell />
+
+      {/* FAQ */}
+      <FAQAccordion
+        title="Dedicated Server FAQ"
+        subtitle="Common questions about our dedicated servers."
+        items={dedicatedFAQs}
+      />
+
+      {/* Final CTA */}
+      <FinalCTA
+        title="Ready for Dedicated Power?"
+        subtitle="Deploy your enterprise-grade dedicated server today with 24/7 expert support."
+      />
     </Layout>
   );
 }
