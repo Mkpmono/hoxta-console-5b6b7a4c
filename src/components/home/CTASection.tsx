@@ -33,62 +33,74 @@ const ctaCards = [
   },
 ];
 
-// FIX: Moved canvas animation to a stable component to prevent re-initialization causing flicker
-function AnimatedBackground() {
+// REGRESSION FIX: The previous canvas background caused full-screen flicker on some GPUs
+// due to layout-thrashing getBoundingClientRect() on every frame + repeated ctx.scale()
+// without resetting transforms during resize. We now use a ResizeObserver, cache bounds,
+// reset transforms on resize, and guarantee a single RAF loop.
+function AnimatedBackground({ enabled = true }: { enabled?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const prefersReducedMotion = useReducedMotion();
-  const particlesRef = useRef<Array<{
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    radius: number;
-    opacity: number;
-  }>>([]);
+  const particlesRef = useRef<
+    Array<{ x: number; y: number; vx: number; vy: number; radius: number; opacity: number }>
+  >([]);
   const animationRef = useRef<number>(0);
-  const initializedRef = useRef(false);
+  const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (!enabled || prefersReducedMotion) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    // FIX: Only initialize once to prevent flicker from repeated particle creation
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * 2;
-      canvas.height = rect.height * 2;
-      ctx.scale(2, 2);
-    };
-
     const createParticles = () => {
-      const rect = canvas.getBoundingClientRect();
-      const count = Math.min(30, Math.floor((rect.width * rect.height) / 20000));
-      particlesRef.current = [];
+      const { width, height } = sizeRef.current;
+      const count = Math.min(28, Math.floor((width * height) / 22000));
+      const next: typeof particlesRef.current = [];
+
       for (let i = 0; i < count; i++) {
-        particlesRef.current.push({
-          x: Math.random() * rect.width,
-          y: Math.random() * rect.height,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
-          radius: Math.random() * 1.5 + 0.5,
-          opacity: Math.random() * 0.4 + 0.1,
+        next.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: (Math.random() - 0.5) * 0.25,
+          radius: Math.random() * 1.5 + 0.6,
+          opacity: Math.random() * 0.35 + 0.1,
         });
       }
+
+      particlesRef.current = next;
+    };
+
+    const setCanvasSize = (width: number, height: number) => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      sizeRef.current = { width, height, dpr };
+
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
+
+      // Important: reset transform before applying DPR scaling
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
     };
 
     const draw = () => {
-      const rect = canvas.getBoundingClientRect();
-      ctx.clearRect(0, 0, rect.width, rect.height);
+      const { width, height } = sizeRef.current;
+      if (width <= 0 || height <= 0) {
+        animationRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
+      ctx.clearRect(0, 0, width, height);
       const particles = particlesRef.current;
 
-      // Draw connections
-      particles.forEach((p1, i) => {
-        particles.slice(i + 1).forEach((p2) => {
+      // Connections
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
           const dx = p1.x - p2.x;
           const dy = p1.y - p2.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -96,15 +108,15 @@ function AnimatedBackground() {
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(25, 195, 255, ${0.1 * (1 - distance / 120)})`;
+            ctx.strokeStyle = `rgba(25, 195, 255, ${0.09 * (1 - distance / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
-        });
-      });
+        }
+      }
 
-      // Draw particles and update positions
-      particles.forEach((p) => {
+      // Particles
+      for (const p of particles) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(25, 195, 255, ${p.opacity})`;
@@ -112,42 +124,46 @@ function AnimatedBackground() {
 
         p.x += p.vx;
         p.y += p.vy;
-
-        if (p.x < 0 || p.x > rect.width) p.vx *= -1;
-        if (p.y < 0 || p.y > rect.height) p.vy *= -1;
-      });
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+      }
 
       animationRef.current = requestAnimationFrame(draw);
     };
 
-    // FIX: Only initialize once
-    if (!initializedRef.current) {
-      resize();
-      createParticles();
-      initializedRef.current = true;
-    }
-    draw();
+    // Observe element size without reading layout on every frame
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
 
-    // FIX: Properly handle resize with cleanup
-    const handleResize = () => {
-      resize();
-      // Only recreate if canvas size changed significantly
-      const rect = canvas.getBoundingClientRect();
-      const expectedCount = Math.min(30, Math.floor((rect.width * rect.height) / 20000));
-      if (Math.abs(particlesRef.current.length - expectedCount) > 5) {
+      const cr = entry.contentRect;
+      const nextW = Math.floor(cr.width);
+      const nextH = Math.floor(cr.height);
+      const { width: prevW, height: prevH } = sizeRef.current;
+
+      if (nextW !== prevW || nextH !== prevH) {
+        setCanvasSize(nextW, nextH);
         createParticles();
       }
-    };
+    });
 
-    window.addEventListener("resize", handleResize);
+    ro.observe(canvas);
+
+    // Prime size immediately
+    const rect = canvas.getBoundingClientRect();
+    setCanvasSize(Math.floor(rect.width), Math.floor(rect.height));
+    createParticles();
+
+    cancelAnimationFrame(animationRef.current);
+    animationRef.current = requestAnimationFrame(draw);
 
     return () => {
+      ro.disconnect();
       cancelAnimationFrame(animationRef.current);
-      window.removeEventListener("resize", handleResize);
     };
-  }, [prefersReducedMotion]);
+  }, [enabled, prefersReducedMotion]);
 
-  if (prefersReducedMotion) {
+  if (!enabled || prefersReducedMotion) {
     return (
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
     );
@@ -157,7 +173,7 @@ function AnimatedBackground() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.55 }}
     />
   );
 }
@@ -165,10 +181,19 @@ function AnimatedBackground() {
 export function CTASection() {
   const prefersReducedMotion = useReducedMotion();
 
+  // Diagnostic switches (safe in production):
+  // - ?disableCta=1 to disable the whole section
+  // - ?ctaBg=0 to disable the animated background layer
+  const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const disableCta = params?.get("disableCta") === "1";
+  const enableBg = params?.get("ctaBg") !== "0";
+
+  if (disableCta) return null;
+
   return (
     <section className="py-20 md:py-28 relative overflow-hidden">
       {/* Animated Background */}
-      <AnimatedBackground />
+      <AnimatedBackground enabled={enableBg} />
       
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
