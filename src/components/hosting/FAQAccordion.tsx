@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import {
   Accordion,
@@ -17,11 +18,12 @@ interface FAQAccordionProps {
   items: FAQItem[];
 }
 
-export function FAQAccordion({
+// FIX: Added forwardRef to prevent React warning about refs on function components
+export const FAQAccordion = forwardRef<HTMLElement, FAQAccordionProps>(function FAQAccordion({
   title = "Frequently Asked Questions",
   subtitle = "Got questions? We've got answers. If you don't find what you're looking for, our support team is here 24/7.",
   items,
-}: FAQAccordionProps) {
+}, ref) {
   return (
     <section className="py-20 md:py-28">
       <div className="container mx-auto px-4 md:px-6">
@@ -63,4 +65,4 @@ export function FAQAccordion({
       </div>
     </section>
   );
-}
+});

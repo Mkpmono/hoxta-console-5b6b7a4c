@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Shield, Clock, Headphones } from "lucide-react";
@@ -22,13 +23,14 @@ const defaultGuarantees = [
   { icon: <Headphones className="w-4 h-4" />, text: "24/7 Expert Support" },
 ];
 
-export function FinalCTA({
+// FIX: Added forwardRef to prevent React warning about refs on function components
+export const FinalCTA = forwardRef<HTMLElement, FinalCTAProps>(function FinalCTA({
   title = "Ready to Get Started?",
   subtitle = "Join thousands of satisfied customers who trust Hoxta for their hosting needs. Experience the difference of premium hosting.",
   primaryCTA = { text: "Get Started Now", href: "#pricing" },
   secondaryCTA = { text: "Contact Sales", href: "/contact" },
   guarantees = defaultGuarantees,
-}: FinalCTAProps) {
+}, ref) {
   return (
     <section className="py-20 md:py-28">
       <div className="container mx-auto px-4 md:px-6">
@@ -108,4 +110,4 @@ export function FinalCTA({
       </div>
     </section>
   );
-}
+});

@@ -33,9 +33,20 @@ const ctaCards = [
   },
 ];
 
+// FIX: Moved canvas animation to a stable component to prevent re-initialization causing flicker
 function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const particlesRef = useRef<Array<{
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    radius: number;
+    opacity: number;
+  }>>([]);
+  const animationRef = useRef<number>(0);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -46,29 +57,22 @@ function AnimatedBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationId: number;
-    let particles: Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      radius: number;
-      opacity: number;
-    }> = [];
-
+    // FIX: Only initialize once to prevent flicker from repeated particle creation
     const resize = () => {
-      canvas.width = canvas.offsetWidth * 2;
-      canvas.height = canvas.offsetHeight * 2;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * 2;
+      canvas.height = rect.height * 2;
       ctx.scale(2, 2);
     };
 
     const createParticles = () => {
-      particles = [];
-      const count = Math.min(30, Math.floor((canvas.offsetWidth * canvas.offsetHeight) / 20000));
+      const rect = canvas.getBoundingClientRect();
+      const count = Math.min(30, Math.floor((rect.width * rect.height) / 20000));
+      particlesRef.current = [];
       for (let i = 0; i < count; i++) {
-        particles.push({
-          x: Math.random() * canvas.offsetWidth,
-          y: Math.random() * canvas.offsetHeight,
+        particlesRef.current.push({
+          x: Math.random() * rect.width,
+          y: Math.random() * rect.height,
           vx: (Math.random() - 0.5) * 0.3,
           vy: (Math.random() - 0.5) * 0.3,
           radius: Math.random() * 1.5 + 0.5,
@@ -78,7 +82,9 @@ function AnimatedBackground() {
     };
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      const particles = particlesRef.current;
 
       // Draw connections
       particles.forEach((p1, i) => {
@@ -97,36 +103,47 @@ function AnimatedBackground() {
         });
       });
 
-      // Draw particles
+      // Draw particles and update positions
       particles.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(25, 195, 255, ${p.opacity})`;
         ctx.fill();
 
-        // Update position
         p.x += p.vx;
         p.y += p.vy;
 
-        // Bounce off edges
-        if (p.x < 0 || p.x > canvas.offsetWidth) p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.offsetHeight) p.vy *= -1;
+        if (p.x < 0 || p.x > rect.width) p.vx *= -1;
+        if (p.y < 0 || p.y > rect.height) p.vy *= -1;
       });
 
-      animationId = requestAnimationFrame(draw);
+      animationRef.current = requestAnimationFrame(draw);
     };
 
-    resize();
-    createParticles();
-    draw();
-
-    window.addEventListener("resize", () => {
+    // FIX: Only initialize once
+    if (!initializedRef.current) {
       resize();
       createParticles();
-    });
+      initializedRef.current = true;
+    }
+    draw();
+
+    // FIX: Properly handle resize with cleanup
+    const handleResize = () => {
+      resize();
+      // Only recreate if canvas size changed significantly
+      const rect = canvas.getBoundingClientRect();
+      const expectedCount = Math.min(30, Math.floor((rect.width * rect.height) / 20000));
+      if (Math.abs(particlesRef.current.length - expectedCount) > 5) {
+        createParticles();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      cancelAnimationFrame(animationId);
+      cancelAnimationFrame(animationRef.current);
+      window.removeEventListener("resize", handleResize);
     };
   }, [prefersReducedMotion]);
 
