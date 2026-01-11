@@ -11,6 +11,7 @@ import {
 
 export const webHostingPlans: Plan[] = [
   {
+    id: "web-starter",
     name: "Starter",
     description: "Perfect for personal sites",
     monthlyPrice: 3.99,
@@ -26,6 +27,7 @@ export const webHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "web-professional",
     name: "Professional",
     description: "For growing businesses",
     monthlyPrice: 8.99,
@@ -43,6 +45,7 @@ export const webHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "web-business",
     name: "Business",
     description: "For high-traffic sites",
     monthlyPrice: 16.99,
@@ -60,6 +63,7 @@ export const webHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "web-enterprise",
     name: "Enterprise",
     description: "Maximum performance",
     monthlyPrice: 29.99,
@@ -209,6 +213,7 @@ export const webHostingComparison = {
 
 export const resellerHostingPlans: Plan[] = [
   {
+    id: "reseller-starter",
     name: "Starter Reseller",
     description: "Start your hosting business",
     monthlyPrice: 19.99,
@@ -224,6 +229,7 @@ export const resellerHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "reseller-business",
     name: "Business Reseller",
     description: "For growing reseller businesses",
     monthlyPrice: 34.99,
@@ -241,6 +247,7 @@ export const resellerHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "reseller-pro",
     name: "Pro Reseller",
     description: "Scale your hosting empire",
     monthlyPrice: 54.99,
@@ -257,6 +264,7 @@ export const resellerHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "reseller-enterprise",
     name: "Enterprise Reseller",
     description: "Maximum resources",
     monthlyPrice: 89.99,
@@ -386,6 +394,7 @@ export const resellerHostingComparison = {
 
 export const vpsHostingPlans: Plan[] = [
   {
+    id: "vps-basic",
     name: "VPS Basic",
     description: "Entry-level virtual server",
     monthlyPrice: 12.99,
@@ -401,6 +410,7 @@ export const vpsHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "vps-standard",
     name: "VPS Standard",
     description: "Balanced performance",
     monthlyPrice: 24.99,
@@ -418,6 +428,7 @@ export const vpsHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "vps-advanced",
     name: "VPS Advanced",
     description: "High-performance server",
     monthlyPrice: 49.99,
@@ -434,6 +445,7 @@ export const vpsHostingPlans: Plan[] = [
     ],
   },
   {
+    id: "vps-enterprise",
     name: "VPS Enterprise",
     description: "Maximum power",
     monthlyPrice: 89.99,
