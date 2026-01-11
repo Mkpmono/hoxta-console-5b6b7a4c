@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { motion } from "framer-motion";
 import { Check, Server, Cpu, HardDrive, Wifi, Zap, Shield, Lock, Gauge } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   HostingHero,
   TrustBar,
@@ -14,19 +14,36 @@ import {
 } from "@/components/hosting";
 import { SEOHead, ServiceSchema, FAQSchema, OrganizationSchema } from "@/components/seo";
 
-const servers = [
+interface DedicatedServer {
+  id: string;
+  name: string;
+  price: number;
+  popular?: boolean;
+  specs: {
+    cpu: string;
+    cores: string;
+    ram: string;
+    storage: string;
+    bandwidth: string;
+  };
+}
+
+const servers: DedicatedServer[] = [
   {
+    id: "dedicated-starter",
     name: "Intel Xeon E3",
     price: 89,
     specs: { cpu: "Intel Xeon E3-1230v6", cores: "4 Cores / 8 Threads", ram: "32 GB DDR4", storage: "2x 500GB NVMe", bandwidth: "10 TB" },
   },
   {
+    id: "dedicated-business",
     name: "Intel Xeon E5",
     price: 149,
-    specs: { cpu: "Intel Xeon E5-2680v4", cores: "14 Cores / 28 Threads", ram: "64 GB DDR4", storage: "2x 1TB NVMe", bandwidth: "20 TB" },
     popular: true,
+    specs: { cpu: "Intel Xeon E5-2680v4", cores: "14 Cores / 28 Threads", ram: "64 GB DDR4", storage: "2x 1TB NVMe", bandwidth: "20 TB" },
   },
   {
+    id: "dedicated-enterprise",
     name: "AMD EPYC",
     price: 249,
     specs: { cpu: "AMD EPYC 7302P", cores: "16 Cores / 32 Threads", ram: "128 GB DDR4", storage: "2x 2TB NVMe", bandwidth: "Unlimited" },
@@ -94,6 +111,12 @@ const dedicatedFAQs = [
 ];
 
 export default function Dedicated() {
+  const navigate = useNavigate();
+
+  const handleOrderServer = (serverId: string) => {
+    navigate(`/order?product=dedicated&plan=${serverId}&billing=monthly`);
+  };
+
   return (
     <Layout>
       {/* SEO */}
@@ -198,14 +221,14 @@ export default function Dedicated() {
                   ))}
                 </div>
 
-                <Link
-                  to="/contact"
+                <button
+                  onClick={() => handleOrderServer(server.id)}
                   className={`block w-full py-3 text-center rounded-lg font-medium transition-colors ${
                     server.popular ? "btn-glow" : "btn-outline"
                   }`}
                 >
-                  Configure Server
-                </Link>
+                  Order Now
+                </button>
               </motion.div>
             ))}
           </div>

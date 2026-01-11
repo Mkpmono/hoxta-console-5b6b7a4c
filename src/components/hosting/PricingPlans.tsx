@@ -9,6 +9,8 @@ export interface PlanFeature {
 }
 
 export interface Plan {
+  id?: string; // Plan ID for order routing
+  productSlug?: string; // Product slug for order routing
   name: string;
   description?: string;
   monthlyPrice: number;
@@ -25,12 +27,33 @@ interface PricingPlansProps {
   title?: string;
   subtitle?: string;
   plans: Plan[];
+  productSlug?: string; // Default product slug if not set on individual plans
+}
+
+function generateOrderUrl(plan: Plan, productSlug: string | undefined, isYearly: boolean): string {
+  const slug = plan.productSlug || productSlug;
+  const billing = isYearly ? "annually" : "monthly";
+  
+  if (plan.cta?.href) {
+    return plan.cta.href;
+  }
+  
+  if (slug && plan.id) {
+    return `/order?product=${slug}&plan=${plan.id}&billing=${billing}`;
+  }
+  
+  if (slug) {
+    return `/order?product=${slug}&billing=${billing}`;
+  }
+  
+  return "/contact";
 }
 
 export function PricingPlans({
   title = "Choose Your Plan",
   subtitle = "Flexible pricing for every need. All plans include our core features.",
   plans,
+  productSlug,
 }: PricingPlansProps) {
   const [isYearly, setIsYearly] = useState(true);
 
@@ -81,7 +104,7 @@ export function PricingPlans({
           <AnimatePresence mode="wait">
             {plans.map((plan, index) => (
               <motion.div
-                key={plan.name}
+                key={plan.id || plan.name}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -137,7 +160,7 @@ export function PricingPlans({
                 </ul>
 
                 <Link
-                  to={plan.cta?.href || "/contact"}
+                  to={generateOrderUrl(plan, productSlug, isYearly)}
                   className={`block w-full py-3 text-center rounded-lg font-medium transition-all ${
                     plan.popular
                       ? "btn-glow"

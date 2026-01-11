@@ -61,6 +61,7 @@ export default function VPS() {
         title="VPS Hosting Plans"
         subtitle="Dedicated resources that are never shared or oversold. All plans include root access, DDoS protection, and 24/7 support."
         plans={vpsHostingPlans}
+        productSlug="vps"
       />
 
       {/* Why Choose Section */}

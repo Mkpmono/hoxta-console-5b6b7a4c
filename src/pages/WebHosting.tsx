@@ -61,6 +61,7 @@ export default function WebHosting() {
         title="Web Hosting Plans"
         subtitle="Powerful hosting solutions for every website. All plans include free SSL, daily backups, and 24/7 support."
         plans={webHostingPlans}
+        productSlug="web-hosting"
       />
 
       {/* Why Choose Section */}

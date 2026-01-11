@@ -24,24 +24,28 @@ export default function GameServerDetail() {
     return <Navigate to="/game-servers" replace />;
   }
 
-  // Convert game plans to pricing component format
-  const plans = game.plans.map((plan) => ({
-    name: plan.name,
-    description: plan.slots 
-      ? `${typeof plan.slots === 'number' ? plan.slots : plan.slots} slots` 
-      : `${plan.ram} RAM`,
-    monthlyPrice: plan.price,
-    yearlyPrice: Math.round(plan.price * 10 * 100) / 100, // 2 months free on yearly
-    popular: plan.popular || false,
-    features: [
-      ...(plan.slots ? [{ label: "Player Slots", value: String(plan.slots) }] : []),
-      ...(plan.ram ? [{ label: "RAM", value: plan.ram }] : []),
-      ...(plan.cpu ? [{ label: "CPU", value: plan.cpu }] : []),
-      ...(plan.storage ? [{ label: "Storage", value: plan.storage }] : []),
-      ...plan.features.map((f) => ({ label: f, value: "✓" })),
-    ],
-    cta: { text: "Order Now", href: `/contact?game=${game.slug}&plan=${plan.name.toLowerCase().replace(/\s+/g, "-")}` },
-  }));
+  // Convert game plans to pricing component format with proper order routing
+  const plans = game.plans.map((plan, index) => {
+    const planId = `${game.slug}-${plan.name.toLowerCase().replace(/\s+/g, "-")}`;
+    return {
+      id: planId,
+      productSlug: game.slug,
+      name: plan.name,
+      description: plan.slots 
+        ? `${typeof plan.slots === 'number' ? plan.slots : plan.slots} slots` 
+        : `${plan.ram} RAM`,
+      monthlyPrice: plan.price,
+      yearlyPrice: Math.round(plan.price * 10 * 100) / 100, // 2 months free on yearly
+      popular: plan.popular || false,
+      features: [
+        ...(plan.slots ? [{ label: "Player Slots", value: String(plan.slots) }] : []),
+        ...(plan.ram ? [{ label: "RAM", value: plan.ram }] : []),
+        ...(plan.cpu ? [{ label: "CPU", value: plan.cpu }] : []),
+        ...(plan.storage ? [{ label: "Storage", value: plan.storage }] : []),
+        ...plan.features.map((f) => ({ label: f, value: "✓" })),
+      ],
+    };
+  });
 
   // Build feature grid from game features
   const featureIcons = [Settings, Shield, HardDrive, Clock, Zap, Globe, Server, Check];

@@ -61,6 +61,7 @@ export default function ResellerHosting() {
         title="Reseller Hosting Plans"
         subtitle="Everything you need to run a professional hosting business. All plans include WHM, white-label branding, and 24/7 support."
         plans={resellerHostingPlans}
+        productSlug="reseller-hosting"
       />
 
       {/* Why Choose Section */}
